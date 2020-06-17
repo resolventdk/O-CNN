@@ -10,7 +10,8 @@ caffe-official
 caffe/experiments/dataset
 tensorflow/script/dataset
 tensorflow/script/logs
-*.~
+*~
 *.octree
+*.json
 *.vtk
 *.stl

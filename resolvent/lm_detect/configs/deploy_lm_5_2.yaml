@@ -1,0 +1,9 @@
+SOLVER:
+  gpu: 0,
+  ckpt: logs/_5_2/model/iter_010000.ckpt
+
+MODEL:
+  name: ocnn
+  channel: 3
+  nout: 36
+  depth: 5
