@@ -88,9 +88,12 @@ class TFSolver:
 
         # testing
         if i % self.flags.test_every_iter == 0:
+          
           # run testing average
           avg_test = self.run_k_iterations(sess, self.flags.test_iter, self.test_tensors)
 
+          print(avg_test)
+          
           # run testing summary
           summary = sess.run(self.summ_test, 
                              feed_dict=dict(zip(self.summ_holder, avg_test)))

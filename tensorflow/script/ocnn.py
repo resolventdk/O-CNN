@@ -256,7 +256,7 @@ def softmax_accuracy(logit, label):
 
 def regress_loss(signal, signal_gt):
   return tf.reduce_mean(tf.reduce_sum(tf.square(signal-signal_gt), 1))
-
+  
 
 def normalize_signal(data):
   channel = data.shape[1]
@@ -307,6 +307,15 @@ def loss_functions(logit, label_gt, num_class, weight_decay, var_name, label_smo
   with tf.name_scope('loss'):
     loss = softmax_loss(logit, label_gt, num_class, label_smoothing)
     accu = softmax_accuracy(logit, label_gt)
+    regularizer = l2_regularizer(var_name, weight_decay)
+  return [loss, accu, regularizer]
+
+# hjs regression loss function
+def loss_functions_regress(signal, signal_gt, weight_decay, var_name, label_smoothing=0.0):
+  with tf.name_scope('loss_regress'):
+    loss = tf.compat.v1.losses.mean_squared_error(signal_gt, signal)
+    print(loss)
+    accu = tf.sqrt(loss)
     regularizer = l2_regularizer(var_name, weight_decay)
   return [loss, accu, regularizer]
 

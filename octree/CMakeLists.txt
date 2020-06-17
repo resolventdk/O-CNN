@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 3.8.2)
 # options
 option(USE_MINIBALL "Use the Miniball.hpp" ON)
 option(USE_WINDOWS_IO "Use the header io.h provided by Windows" OFF)
-option(USE_CUDA "CPU only, without CUDA" ON)
-option(USE_PYTHON "Build the python interface with pybind11" ON)
+option(USE_CUDA "CPU only, without CUDA" OFF)
+option(USE_PYTHON "Build the python interface with pybind11" OFF)
 option(USE_GLOG "Use glog" OFF)
 option(USE_OPENMP "Use OpenMP for speed up" OFF)
 option(USE_RPLY "Use the library rply in the project octree" OFF)
+#option(BUILD_OLDPYTHON "build the old python wrapper" ON)
 set(VCPKG "<Set VCPKG path>" CACHE PATH "The VCPKG path, containing glog and gtest")
 
 
@@ -99,20 +100,30 @@ if(USE_RPLY)
   target_link_libraries(octree_lib rply)
 endif(USE_RPLY)
 
-# add tools
-file(GLOB_RECURSE srcs "${PROJECT_SOURCE_DIR}/tools/*.cpp")
-foreach(source ${srcs})
-  get_filename_component(name ${source} NAME_WE)
-  if(name MATCHES "build_octree") 
-    set(name "octree") 
+# hjs: build the legacy python wrapper
+if(SKBUILD)
+  message("SKBUILD")
+  find_package(PythonExtensions REQUIRED)
+  find_package(Cython REQUIRED)
+  find_package(NumPy REQUIRED)  
+  add_subdirectory(python/legacy/octree)
+  add_subdirectory(python/legacy/dataset)  
+else()
+  # add tools
+  file(GLOB_RECURSE srcs "${PROJECT_SOURCE_DIR}/tools/*.cpp")
+  foreach(source ${srcs})
+    get_filename_component(name ${source} NAME_WE)
+    if(name MATCHES "build_octree") 
+      set(name "octree") 
+    endif()
+    add_executable(${name} ${source})
+    target_link_libraries(${name} octree_lib)
+    set_target_properties(${name} PROPERTIES FOLDER "tools")
+  endforeach(source)
+
+  # add the python interface
+  if(USE_PYTHON)
+    add_subdirectory(python)
   endif()
-  add_executable(${name} ${source})
-  target_link_libraries(${name} octree_lib)
-  set_target_properties(${name} PROPERTIES FOLDER "tools")
-endforeach(source)
-
-
-# add the python interface
-if(USE_PYTHON)
-  add_subdirectory(python)
+  
 endif()

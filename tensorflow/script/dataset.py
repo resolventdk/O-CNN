@@ -15,6 +15,19 @@ class ParseExample:
     parsed = tf.parse_single_example(record, self.features)
     return parsed[self.x_alias], parsed[self.y_alias]
 
+class ParseOctreeWithVectorExample:
+  def __init__(self, x_alias='data', y_alias='label', **kwargs):
+    self.x_alias = x_alias
+    self.y_alias = y_alias
+    self.features = { x_alias : tf.FixedLenFeature([], tf.string),
+                      y_alias : tf.FixedLenFeature([36], tf.float32) }
+
+  def __call__(self, record):
+    parsed = tf.parse_single_example(record, self.features)
+    return parsed[self.x_alias], parsed[self.y_alias] #\
+      # tf.sparse.to_dense(parsed[self.y_alias])
+
+  
 
 class Points2Octree:
   def __init__(self, depth, full_depth=2, node_dis=False, node_feat=False,
@@ -143,7 +156,7 @@ class OctreeDataset:
                    .prefetch(8).make_one_shot_iterator() 
     return itr if return_iter else itr.get_next()
 
-
+  
 class DatasetFactory:
   def __init__(self, flags, bounding_sphere=bounding_sphere,
                point_dataset=PointDataset):
@@ -154,6 +167,8 @@ class DatasetFactory:
           Points2Octree(**flags))
     elif flags.dtype == 'octree':
       self.dataset = OctreeDataset(ParseExample(**flags))
+    elif flags.dtype == 'octree_with_vector':
+      self.dataset = OctreeDataset(ParseOctreeWithVectorExample(**flags))
     else:
       print('Error: unsupported datatype ' + flags.dtype)
 
