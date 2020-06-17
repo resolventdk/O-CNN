@@ -89,6 +89,11 @@ _C.LOSS.weights          = (1.0, 1.0) # The weight factors for different losses
 _C.LOSS.label_smoothing  = 0.0        # The factor of label smoothing
 
 
+# deploy
+_C.DEPLOY = CN()
+_C.DEPLOY.input          = ''         # Input to evaluate
+
+
 # backup the commands
 _C.SYS = CN()
 _C.SYS.cmds              = ''         # Used to backup the commands 
