@@ -80,10 +80,11 @@ extractor = utils.PointsExtractor()
 
 # loop the test train directories of dataset
 for directory in ["test", "train"]:
-    input_path = input_path + "/" + directory
-    records_prefix = output_path + "/" + directory
 
-    mesh_files = utils.find_files(input_path, "*.%s" % mesh_ext)
+    mesh_files = utils.find_files(input_path + "/" + directory,
+                                  "*.%s" % mesh_ext)
+
+    records_prefix = output_path + "/" + directory
     records_name = records_prefix + "_%d_2_1.tfrecords" % depth
     writer = tf.io.TFRecordWriter(records_name)
     
