@@ -79,7 +79,7 @@ builder = utils.OctreeBuilder()
 extractor = utils.PointsExtractor()
 
 # loop the test train directories of dataset
-for directory in ["test"]:
+for directory in ["test", "train"]:
     input_path = input_path + "/" + directory
     records_prefix = output_path + "/" + directory
 
