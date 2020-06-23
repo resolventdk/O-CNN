@@ -3,6 +3,21 @@ import tensorflow as tf
 sys.path.append("..")
 from libs import *
 
+# hjs: count number of trainable variables
+# https://stackoverflow.com/questions/38160940/how-to-count-total-number-of-trainable-parameters-in-a-tensorflow-model
+def print_trainable_variables():
+  print("Trainable parameters:")
+  total_parameters = 0
+  for variable in tf.trainable_variables():
+    # shape is an array of tf.Dimension
+    name = variable.name
+    shape = variable.get_shape()
+    variable_parameters = 1
+    for dim in shape:
+      variable_parameters *= dim.value
+    print(name, shape, variable_parameters)
+    total_parameters += variable_parameters
+  print("Total: ", total_parameters) 
 
 def get_variables_with_name(name=None, without=None, train_only=True, verbose=False):
   if name is None:

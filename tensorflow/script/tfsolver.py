@@ -43,7 +43,8 @@ class TFSolver:
 
   def initialize(self, sess):
     sess.run(tf.global_variables_initializer())
-
+    print_trainable_variables()
+    
   def run_k_iterations(self, sess, k, tensors):
     num = len(tensors)
     avg_results = [0] * num

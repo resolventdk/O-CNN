@@ -50,11 +50,13 @@ def network_ocnn(octree, flags, training=True, reuse=None):
 
     with tf.variable_scope("full_voxel"):
       data = octree_full_voxel(data, depth=2)
-      data = tf.layers.dropout(data, rate=0.5, training=training)
+      data = tf.layers.dropout(data, rate=flags.dropout[0],
+                               training=training)
 
     with tf.variable_scope("fc1"):
       data = fc_bn_relu(data, channels[2], training=training)
-      data = tf.layers.dropout(data, rate=0.5, training=training)
+      data = tf.layers.dropout(data, rate=flags.dropout[1],
+                               training=training)
 
     with tf.variable_scope("fc2"):
       logit = dense(data, flags.nout, use_bias=True)
