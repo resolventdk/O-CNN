@@ -11,7 +11,7 @@ from dataset import DatasetFactory
 from network_completion import CompletionResnet
 from ocnn import l2_regularizer
 sys.path.append('..')
-from libs import octree_scan, octree_batch
+from libs import octree_scan, octree_batch, normalize_points
 
 
 # flags
@@ -21,17 +21,21 @@ FLAGS = parse_args()
 
 
 # the dataset
-def bounding_sphere(points):
-  radius = 64.0
-  center = (64.0, 64.0, 64.0)
-  return radius, center
+class NormalizePoints:
+  def __call__(self, points):
+    radius = 64.0
+    center = (64.0, 64.0, 64.0)
+    points = normalize_points(points, radius, center)
+    return points
 
 
 class PointDataset:
-  def __init__(self, parse_example, transform_points, points2octree):
+  def __init__(self, parse_example, normalize_points, transform_points, points2octree):
     self.parse_example = parse_example
+    self.normalize_points = normalize_points
     self.transform_points = transform_points
     self.points2octree = points2octree
+    # reuse the DATA.train.camera for testing data
     with open(FLAGS.DATA.train.camera, 'rb') as fid:
       self.camera_path = pickle.load(fid)
 
@@ -51,8 +55,9 @@ class PointDataset:
     with tf.name_scope('points_dataset'):
       def preprocess(record):
         points, label = self.parse_example(record)
+        points = self.normalize_points(points)
         points = self.transform_points(points)
-        octree1 = self.points2octree(points)         # the complete octree
+        octree1 = self.points2octree(points)        # the complete octree
         scan_axis = tf.py_func(self.gen_scan_axis, [label], tf.float32)
         octree0 = octree_scan(octree1, scan_axis)   # the transformed octree
         return octree0, octree1
@@ -78,7 +83,7 @@ network = CompletionResnet(FLAGS.MODEL)
 # define the graph
 def compute_graph(dataset='train', training=True, reuse=False):
   flags_data = FLAGS.DATA.train if dataset == 'train' else FLAGS.DATA.test
-  octree0, octree1 = DatasetFactory(flags_data, bounding_sphere, PointDataset)()
+  octree0, octree1 = DatasetFactory(flags_data, NormalizePoints, PointDataset)()
   convd = network.octree_encoder(octree0, training, reuse)
   loss, accu = network.octree_decoder(convd, octree0, octree1, training, reuse)
 
@@ -99,7 +104,7 @@ class CompletionSolver(TFSolver):
 
   def decode_shape(self):
     # build graph
-    octree_in, _ = DatasetFactory(FLAGS.DATA.test, bounding_sphere)()
+    octree_in, _ = DatasetFactory(FLAGS.DATA.test, NormalizePoints)()
     convd = network.octree_encoder(octree_in, training=False, reuse=False)
     octree_out = network.decode_shape(convd, octree_in, training=False, reuse=False)
 
@@ -129,5 +134,5 @@ class CompletionSolver(TFSolver):
 
 # run the experiments
 if __name__ == '__main__':
-  solver = CompletionSolver(FLAGS.SOLVER, compute_graph)
+  solver = CompletionSolver(FLAGS, compute_graph)
   solver.run()

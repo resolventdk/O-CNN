@@ -51,6 +51,13 @@ If you want to try the original code or do some speed comparisons with our `O-CN
 feel free to drop me an email, we can share the original code with you. 
 
 
+<!-- 
+cd caffe/docker
+docker build --tag=ocnn:caffe gpu
+docker run --runtime=nvidia --name=ocnn-caffe -it --rm ocnn:caffe /bin/bash 
+docker pull wangps/ocnn:caffe
+-->
+
 ## Tensorflow
 
 The code has been tested with Ubuntu 16.04/18.04 and TensorFlow 1.14.0/1.12.0.
@@ -82,3 +89,24 @@ you should install `g++4.8` and rebuild the code under folders `octree` and `ten
 If you get warning messages from numpy or BatchNorm, you can execute the following
 commands: `pip install -U gast==0.2.2 numpy==1.16.4`. 
 
+## PyTorch
+
+The code has been tested with Ubuntu 16.04 and PyTorch 1.6.0.
+
+1. Install PyTorch and relevent packages with the following commands:
+   ```shell
+   conda create --name pytorch-1.6.0 python=3.7
+   conda activate pytorch-1.6.0
+   conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch
+   conda install tqdm yacs -c conda-forge
+   ```
+2. Build O-CNN under PyTorch.
+   ```shell
+   cd pytorch
+   python setup.py install --build_octree
+   ```
+
+3. Run the test cases.
+   ```shell
+   python -W ignore test/test_all.py -v
+   ```
