@@ -150,22 +150,10 @@ else()
 
   # add the python interface
   if(USE_PYTHON)
+    message(STATUS "octree: USE_PYTHON")
     add_subdirectory(python)
   endif()
-<<<<<<< HEAD
   
-endif()
-=======
-  add_executable(${name} ${source})
-  target_link_libraries(${name} octree_lib)
-  set_target_properties(${name} PROPERTIES FOLDER "tools")
-endforeach(source)
-
-
-# add the python interface
-if(USE_PYTHON)
-  message(STATUS "octree: USE_PYTHON")
-  add_subdirectory(python)
 endif()
 
 # add gtest
@@ -177,4 +165,3 @@ set_target_properties(gtest gtest_main PROPERTIES FOLDER "ext")
 # add the test
 add_executable(octree_test ${src_test})
 target_link_libraries(octree_test octree_lib gtest gtest_main)
->>>>>>> upstream/master
