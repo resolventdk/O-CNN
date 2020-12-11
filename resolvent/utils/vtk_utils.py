@@ -41,6 +41,31 @@ def getNormals(polydata):
     nms = numpy_support.vtk_to_numpy(polydata.GetPointData().GetNormals())
     return pts, nms  # also points because seems to be different
 
+# write numpy array (N,3) of points to file
+def writePoints(filename, ndarray):
+    assert(ndarray.shape[1]==3)
+
+    # Create the geometry of a point (the coordinate)
+    points = vtk.vtkPoints()
+
+    # Create the topology of the point (a vertex)
+    vertices = vtk.vtkCellArray()
+    for i in range(ndarray.shape[0]):
+        id = points.InsertNextPoint(ndarray[i,:])
+        vertices.InsertNextCell(1)
+        vertices.InsertCellPoint(id)
+        
+    # Create a polydata object
+    pd_points = vtk.vtkPolyData()
+
+    # Set the points and vertices we created as the geometry and topology of the polydata
+    pd_points.SetPoints(points)
+    pd_points.SetVerts(vertices)
+
+    # Write to file
+    writePolydata(filename, pd_points)
+
+
 # pipeline for extrating points, normals from meshes
 class PointsExtractor:
 

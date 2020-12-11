@@ -1,6 +1,6 @@
 SOLVER:
   gpu: 0,
-  logdir: logs/ocnn_5_2
+  logdir: logs/ocnn_5_2_dropout_00_00
   run: train
   max_iter: 10000
   test_iter: 300
@@ -31,6 +31,7 @@ MODEL:
   channel: 3
   nout: 36
   depth: 5
+  dropout: (0.5, 0.5)
 
 LOSS:
   weight_decay: 1e-6

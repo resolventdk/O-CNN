@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+import json
 
 # TODO: fix incompatible numpy.. supress warning, before loading tf
 import warnings
@@ -23,6 +24,9 @@ import utils
 # run using
 # deploy.py --config configs/deploy_lm_5_2.yaml DEPLOY.input test.vtk
 
+#
+
+full_depth = 2
 
 # ordered list of names of landmarks
 
@@ -61,7 +65,7 @@ points, normals = extractor.extract(mesh_file_str, FLAGS.MODEL.depth)
 
 octree_flags = {
     "depth":FLAGS.MODEL.depth,
-    "full_depth":2,
+    "full_depth":full_depth,
     "node_displacement":False,
     "node_feature":False,
     "split_label":False,
@@ -85,6 +89,28 @@ octree_bytes = builder.octree.get_buffer()
 # scaling parameters
 trans = builder.center
 scale = builder.radius
+
+# look for json file with true landmarks in the same directory
+
+lm_file_str = mesh_file_str.replace("vtk", "json")
+lm_file_exists = os.path.exists(lm_file_str)
+
+if lm_file_exists:
+
+  # load json
+  with open(lm_file_str) as f:
+      data = json.load(f)
+  landmarks = {}
+  for entry in data:
+      landmarks[entry['id']]=entry['coordinates']
+
+  # loop landmarks in the predefined order to populate np array
+  lm_true = np.zeros((len(lm_keys),3))
+  for i, key in enumerate(lm_keys):
+      if key not in landmarks:
+          print("%s does not have landmark %s" % (lm_file_str, key))
+          continue
+      lm_true[i, :] = landmarks[key]
 
 # setup network:
     
@@ -112,10 +138,20 @@ with tf.Session(config=config) as sess:
   y_predict = sess.run(y, feed_dict={x: octree_bytes})
 
   # reshape and rescale
-  lm_points = np.reshape(y_predict, (-1, 3))*scale + trans
-  
-  print("%s predicted landmarks:" % mesh_file_str)
-  for i, k in enumerate(lm_keys):
-    print("%-50s" % k, lm_points[i,:])
+  lm_predict = np.reshape(y_predict, (-1, 3))*scale + trans
 
-  
+  print("done processing: %s" % mesh_file_str)
+                      
+  print("predicted landmarks:")
+  for i, k in enumerate(lm_keys):
+    print("%-50s" % k, lm_predict[i,:])
+  utils.writePoints(
+    "predict_%d_%d.vtk" % (FLAGS.MODEL.depth, full_depth),
+    lm_predict
+  )
+
+  if lm_file_exists:
+    print("true landmarks:")
+    for i, k in enumerate(lm_keys):
+      print("%-50s" % k, lm_true[i,:])
+      utils.writePoints("true.vtk", lm_true)

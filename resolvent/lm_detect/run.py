@@ -1,5 +1,10 @@
 import os
 import sys
+
+# TODO: fix incompatible numpy.. supress warning, before loading tf
+import warnings
+warnings.filterwarnings('ignore',category=FutureWarning)
+
 import tensorflow as tf
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # INFO and WARNING messages are not printed
 
